@@ -2,6 +2,16 @@
   "agent": "agent-orchestrator-01",
   "private_key_path": "C:\\Users\\raush\\ai-agent-security-capstone\\04-blue-team\\keys\\agent-orchestrator-01_private.pem",
   "public_key_path": "C:\\Users\\raush\\ai-agent-security-capstone\\04-blue-team\\keys\\agent-orchestrator-01_public.pem",
-  "verification_result": true,
-  "reason": "signature valid"
+  "legitimate_verification": {
+    "result": true,
+    "reason": "signature valid"
+  },
+  "tampered_verification": {
+    "result": false,
+    "reason": "signature verification failed: message does not match signature"
+  },
+  "forged_spoofing_verification": {
+    "result": false,
+    "reason": "signature verification failed: message does not match signature"
+  }
 }
