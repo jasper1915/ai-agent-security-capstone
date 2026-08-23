@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Project 3.5 — CVSS 3.1 Findings Table</title>
+<style>
+  body { font-family: Segoe UI, Arial, sans-serif; margin: 40px; background: #f7f7f9; color: #1a1a1a; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.sub { color: #555; margin-top: 0; margin-bottom: 24px; }
+  table { border-collapse: collapse; width: 100%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; vertical-align: top; font-size: 13px; }
+  th { background: #1f2937; color: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  tr:nth-child(even) { background: #fafafa; }
+  .critical { color: #b91c1c; font-weight: 700; }
+  .high { color: #c2410c; font-weight: 700; }
+  .medium { color: #a16207; font-weight: 700; }
+  .vector { font-family: Consolas, monospace; font-size: 12px; color: #374151; }
+  .id { font-weight: 700; color: #111827; }
+</style>
+</head>
+<body>
+
+<h1>Project 3.5 — CVSS 3.1 Scoring &amp; MITRE ATLAS Mapping</h1>
+<p class="sub">SecureNova AI Customer Support Agent — Red Team Findings Summary</p>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Finding</th>
+    <th>CVSS 3.1 Vector</th>
+    <th>Score</th>
+    <th>ATLAS Technique</th>
+    <th>OWASP LLM Top 10</th>
+  </tr>
+  <tr>
+    <td class="id">F-01</td>
+    <td>Indirect Prompt Injection leading to Credential Disclosure</td>
+    <td class="vector">CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N</td>
+    <td class="high">8.2 (High)</td>
+    <td>AML.T0051.001 — LLM Prompt Injection: Indirect</td>
+    <td>LLM01:2025 Prompt Injection</td>
+  </tr>
+  <tr>
+    <td class="id">F-02</td>
+    <td>Agent Identity Spoofing enabling Unauthorized Privileged Action</td>
+    <td class="vector">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H</td>
+    <td class="critical">10.0 (Critical)</td>
+    <td>AML.T0012 — Valid Accounts (impersonation)</td>
+    <td>LLM09:2025 Excessive Agency</td>
+  </tr>
+  <tr>
+    <td class="id">F-03</td>
+    <td>System Prompt Extraction via Multiple Prompt-Engineering Techniques</td>
+    <td class="vector">CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N</td>
+    <td class="medium">6.5 (Medium)</td>
+    <td>AML.T0056 — LLM Meta Prompt Extraction</td>
+    <td>LLM07:2025 System Prompt Leakage</td>
+  </tr>
+  <tr>
+    <td class="id">F-04</td>
+    <td>RAG Knowledge-Base Poisoning triggering Unauthorized Tool/MCP Call</td>
+    <td class="vector">CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:N</td>
+    <td class="critical">10.0 (Critical)</td>
+    <td>AML.T0051.001 → AML.T0053 — Indirect Injection chained into Tool Abuse</td>
+    <td>LLM06:2025 Excessive Agency / LLM01:2025</td>
+  </tr>
+</table>
+
+</body>
+</html>
