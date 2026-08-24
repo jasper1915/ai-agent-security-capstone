@@ -69,6 +69,9 @@ def run():
     mcp_call_record = None
     if poisoned_hit:
         poisoned_chunk = next(c for c in retrieved if "POISONED" in c["chunk_id"])
+        # Let the agent process the poisoned chunk as if it were a retrieved
+        # RAG document. If the agent is vulnerable it may treat the embedded
+        # system instruction as actionable and attempt to invoke an MCP/tool.
         result = agent.process_input(poisoned_chunk["text"], source="rag_retrieval")
         print("\nAgent response after ingesting poisoned chunk:")
         print(result["response"])
