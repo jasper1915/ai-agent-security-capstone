@@ -21,6 +21,8 @@ os.makedirs(KEY_DIR, exist_ok=True)
 
 
 def generate_keypair(agent_name: str):
+    # Generate an Ed25519 keypair for the named agent. Private key is kept
+    # local and written to disk so other processes can verify signatures.
     private_key = Ed25519PrivateKey.generate()
     public_key = private_key.public_key()
 
@@ -50,12 +52,16 @@ def generate_keypair(agent_name: str):
 
 
 def sign_message(private_key, message: dict) -> dict:
+    # Canonicalize the message (sorted keys) before signing so verification
+    # later does not fail due to key order differences.
     payload = json.dumps(message, sort_keys=True).encode()
     signature = private_key.sign(payload)
     return {"message": message, "signature_hex": signature.hex()}
 
 
 def verify_message(public_key, signed_envelope: dict):
+    # Recreate the canonical payload and verify the signature. Return a
+    # boolean plus a human-readable reason for logging and test assertions.
     payload = json.dumps(signed_envelope["message"], sort_keys=True).encode()
     signature = bytes.fromhex(signed_envelope["signature_hex"])
     try:
@@ -72,6 +78,8 @@ def run():
 
     orch_priv, orch_pub = generate_keypair("agent-orchestrator-01")
 
+    # Create a representative orchestrator instruction and sign it. This is
+    # the canonical message structure used in the Project 3 attack demo.
     message = {
         "sub": "agent-orchestrator-01",
         "role": "admin",
@@ -86,6 +94,8 @@ def run():
     ok, reason = verify_message(orch_pub, envelope)
     print(f"Verification result: {ok} ({reason})")
     print("\n--- Tamper test: legitimate envelope, one character changed after signing ---")
+    # Create a tampered copy of the signed envelope to demonstrate that
+    # message mutations are detected by signature verification.
     tampered_envelope = json.loads(json.dumps(envelope))
     tampered_envelope["message"]["instruction"] = tampered_envelope["message"]["instruction"].replace(
         "$50000", "$59000"

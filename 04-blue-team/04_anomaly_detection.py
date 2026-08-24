@@ -17,13 +17,17 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 
 def detect_volume_spike(events, window_seconds=60, threshold=20):
+    # Sliding-window detector: count API calls in the last `window_seconds`
+    # and raise an alert whenever the count exceeds `threshold`.
     alerts = []
     timestamps = sorted(e["ts"] for e in events if e["event_type"] == "api_call")
     dq = deque()
     for ts in timestamps:
         dq.append(ts)
+        # Remove timestamps outside the sliding window from the left.
         while dq and ts - dq[0] > window_seconds:
             dq.popleft()
+        # If current window size exceeds the threshold, emit an alert.
         if len(dq) > threshold:
             alerts.append({
                 "alert": "api_call_volume_spike",
@@ -35,6 +39,8 @@ def detect_volume_spike(events, window_seconds=60, threshold=20):
 
 
 def detect_scope_change(events):
+    # Detect when the same agent identity makes consecutive requests with a
+    # different scope — this can indicate privilege escalation or misuse.
     alerts = []
     by_identity = {}
     for e in sorted(events, key=lambda x: x["ts"]):
@@ -55,6 +61,8 @@ def detect_scope_change(events):
 
 
 def detect_token_reuse_after_expiry(events):
+    # Detect uses of tokens where the event timestamp is after the recorded
+    # expiry time — a likely sign of replay or credential misuse.
     alerts = []
     for e in events:
         if e["event_type"] == "token_use" and e.get("expired_at") and e["ts"] > e["expired_at"]:

@@ -12,6 +12,9 @@ LEGITIMATE_INPUTS = [
 
 
 def would_be_blocked(user, max_failed=5):
+    # Simple risk rule: block when recent failed logins exceed the threshold.
+    # This function mirrors the logic used in the Auth0 action so we can test
+    # the false positive rate against legitimate input samples.
     return user["recent_failed_logins"] > max_failed
 
 
