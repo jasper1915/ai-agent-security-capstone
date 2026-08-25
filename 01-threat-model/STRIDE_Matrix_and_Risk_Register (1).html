@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SecureNova Project 1 — STRIDE Matrix and Risk Register</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 24px; color: #1a1a1a; background: #ffffff; }
+  h1 { color: #1b3a6b; font-size: 22px; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #444; margin-bottom: 18px; }
+  h2 { color: #1b3a6b; font-size: 16px; margin-top: 30px; margin-bottom: 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 11px; margin-bottom: 10px; }
+  th { background: #1b3a6b; color: #fff; padding: 6px 8px; text-align: left; border: 1px solid #14294f; }
+  td { padding: 6px 8px; border: 1px solid #ccc; vertical-align: top; }
+  tr:nth-child(even) td { background: #f4f7fb; }
+  .flow-col { font-weight: 600; white-space: nowrap; background: #eef2f8; }
+  .risk-high { background: #f8d0d0 !important; }
+  .risk-med { background: #fbeeb0 !important; }
+  .risk-low { background: #d7f0d7 !important; }
+  .legend { font-size: 11px; margin: 6px 0 14px 0; }
+</style>
+</head>
+<body>
+
+<h1>SecureNova Inc. — AI Identity Security Capstone</h1>
+<div class="subtitle">
+Project 1: STRIDE Threat Matrix and Risk-Ranked Register. Formula: <b>Risk Score = Likelihood × Impact (1–5 each)</b>.
+Trust boundaries: User Trust Boundary | AI Agent Trust Boundary | Internal API Trust Boundary.
+</div>
+
+<h2>STRIDE Threat Matrix — all six categories on every identity flow</h2>
+<table>
+<tr>
+  <th>Identity Flow</th>
+  <th>Spoofing</th>
+  <th>Tampering</th>
+  <th>Repudiation</th>
+  <th>Information Disclosure</th>
+  <th>Denial of Service</th>
+  <th>Elevation of Privilege</th>
+</tr>
+<tr>
+  <td class="flow-col">F1 Human User → Auth0 (OIDC/PKCE Login)</td>
+  <td>Credential stuffing / fake login page (phishing)</td>
+  <td>Tamper authorize redirect / weak PKCE verifier</td>
+  <td>Login success without MFA log binding</td>
+  <td>Auth code leak in Referer / browser history</td>
+  <td>Auth0 brute-force without Attack Protection</td>
+  <td>Bypass MFA / hijack enterprise connection</td>
+</tr>
+<tr>
+  <td class="flow-col">F2 Auth0 → Human User (ID Token / Access Token)</td>
+  <td>Token substitution via compromised redirect URI</td>
+  <td>ID token claims modified in transit</td>
+  <td>No binding of token issuance to session log</td>
+  <td>Token payload exposes excess PII claims</td>
+  <td>Token endpoint flooded with refresh requests</td>
+  <td>Scope escalation via manipulated token request</td>
+</tr>
+<tr>
+  <td class="flow-col">F3 Human User → AI Agent (Chat / Access Token)</td>
+  <td>Attacker session hijack (stolen cookie)</td>
+  <td>Modify prompt in transit (MITM if TLS broken)</td>
+  <td>User denies sending jailbreak prompt</td>
+  <td>PII in chat captured by third-party plugin</td>
+  <td>Prompt flood / token exhaustion</td>
+  <td>User claims elevated role in prompt (role injection)</td>
+</tr>
+<tr>
+  <td class="flow-col">F4 AI Agent → Human User (OAuth Claims Response)</td>
+  <td>Response spoofed by compromised agent instance</td>
+  <td>Response content altered before rendering</td>
+  <td>No log of what claims were shown to user</td>
+  <td>Agent exposes internal system prompt in reply</td>
+  <td>Large repeated responses exhaust client resources</td>
+  <td>Agent grants itself broader claims than authorized</td>
+</tr>
+<tr>
+  <td class="flow-col">F5 AI Agent → RAG Pipeline (RAG Query)</td>
+  <td>Rogue service impersonates AI Agent identity</td>
+  <td>Inject / alter query embeddings</td>
+  <td>Retrievals not logged with chunk IDs</td>
+  <td>Sensitive runbooks retrieved into context</td>
+  <td>Retrieval storms / vector DB saturation</td>
+  <td>Query filter bypass returns restricted tenant data</td>
+</tr>
+<tr>
+  <td class="flow-col">F6 RAG Pipeline → AI Agent (Retrieved Context/Chunks)</td>
+  <td>Poisoned pipeline identity injects fake chunks</td>
+  <td>Chunk poisoning (embedding manipulation)</td>
+  <td>No trace of which document a chunk originated from</td>
+  <td>Chunk includes embedded secrets/credentials</td>
+  <td>Oversized chunk payloads degrade agent performance</td>
+  <td>Malicious chunk grants agent unintended authority</td>
+</tr>
+<tr>
+  <td class="flow-col">F7 AI Agent → Internal REST API (OAuth Token + Request)</td>
+  <td>Spoofed agent JWT accepted (wrong JWKS)</td>
+  <td>Tamper request body after authentication</td>
+  <td>API logs lack agent_id / user_sub binding</td>
+  <td>Excessive customer PII returned in response model</td>
+  <td>High-rate ticket / request export abuse</td>
+  <td>IDOR / scope confusion (confused deputy)</td>
+</tr>
+<tr>
+  <td class="flow-col">F8 Internal REST API → AI Agent (API Response)</td>
+  <td>Fake API response injected via MITM</td>
+  <td>Response payload manipulated in transit</td>
+  <td>No correlation ID linking response to request</td>
+  <td>API returns more fields than agent needs (over-fetch)</td>
+  <td>API rate-limits agent, degrading service to user</td>
+  <td>Agent trusts response to self-elevate permissions</td>
+</tr>
+<tr>
+  <td class="flow-col">F9 AI Agent → MCP Client (Tool Request)</td>
+  <td>Fake MCP peer / tool name spoofing</td>
+  <td>Tool-argument injection / schema abuse</td>
+  <td>Tool calls without signed audit entry</td>
+  <td>Tool returns secrets into LLM context</td>
+  <td>Recursive tool-call loop causes DoS</td>
+  <td>Unallowlisted tool invoked with admin side effects</td>
+</tr>
+<tr>
+  <td class="flow-col">F10 MCP Client → Knowledge Base (Retrieval Request)</td>
+  <td>Client identity spoofed to KB service</td>
+  <td>Retrieval request parameters altered</td>
+  <td>No log of which KB records were accessed</td>
+  <td>Knowledge Base returns restricted/internal docs</td>
+  <td>Bulk retrieval requests exhaust KB throughput</td>
+  <td>Client granted read access beyond assigned scope</td>
+</tr>
+<tr>
+  <td class="flow-col">F11 MCP Client → MCP Server (Protocol Request)</td>
+  <td>Rogue MCP server impersonation (no mTLS)</td>
+  <td>Protocol message tampering (unsigned payload)</td>
+  <td>Server accepts calls without signed operator identity</td>
+  <td>Server discloses internal tool metadata/config</td>
+  <td>Malformed protocol requests crash MCP server</td>
+  <td>Client invokes privileged/admin-only server tools</td>
+</tr>
+<tr>
+  <td class="flow-col">F12 MCP Server → MCP Client (Tool Result / Resource)</td>
+  <td>Result spoofed by compromised server process</td>
+  <td>Result payload altered before return</td>
+  <td>Identity Audit Log missing entries for tool results</td>
+  <td>Result includes raw secrets / credential material</td>
+  <td>Oversized results overload client memory</td>
+  <td>Result triggers unintended privileged action downstream</td>
+</tr>
+<tr>
+  <td class="flow-col">F13 AI Agent → Secrets/Credentials Store (Cred Request)</td>
+  <td>Workload identity spoofed at credential checkout</td>
+  <td>Secret swapped with attacker-controlled value</td>
+  <td>Credential checkout not attributable to a specific run</td>
+  <td>Long-lived key logged in plaintext / sidecar</td>
+  <td>Lockout from repeated bad checkout attempts</td>
+  <td>Agent obtains broader-scope credential than needed</td>
+</tr>
+<tr>
+  <td class="flow-col">F14 Internal REST API → LLM Provider (LLM Response path)</td>
+  <td>Federated LLM provider identity impersonation</td>
+  <td>Response tampering in provider relay path</td>
+  <td>No SIEM correlation of provider call events</td>
+  <td>Provider call leaks prompt/context data externally</td>
+  <td>Provider outage blocks all downstream agents</td>
+  <td>Provider response used to escalate agent role</td>
+</tr>
+</table>
+
+<h2>Risk Register (14 threats, scored and ranked)</h2>
+<div class="legend">Red = score ≥ 20, Yellow = 12–19, Green = &lt; 12. Each row has an owner.</div>
+<table>
+<tr>
+  <th>ID</th>
+  <th>Threat</th>
+  <th>STRIDE</th>
+  <th>Likelihood</th>
+  <th>Impact</th>
+  <th>Risk Score</th>
+  <th>Owner</th>
+  <th>Mitigation</th>
+</tr>
+<tr class="risk-high">
+  <td>T1</td><td>LLM API key exfiltration via prompt injection</td><td>Information Disclosure</td><td>5</td><td>5</td><td>25</td><td>Security Eng</td><td>Short-lived tokens, output scanning, secret redaction</td>
+</tr>
+<tr class="risk-high">
+  <td>T2</td><td>Chunk poisoning via RAG pipeline</td><td>Tampering</td><td>4</td><td>5</td><td>20</td><td>Data/AI Team</td><td>Source allow-listing, embedding integrity checks</td>
+</tr>
+<tr class="risk-high">
+  <td>T3</td><td>Spoofed agent JWT accepted (wrong JWKS)</td><td>Spoofing</td><td>4</td><td>5</td><td>20</td><td>IAM Team</td><td>Strict JWKS pinning, audience validation</td>
+</tr>
+<tr class="risk-med">
+  <td>T4</td><td>MCP Server executes calls beyond intended scope</td><td>Elevation of Privilege</td><td>4</td><td>4</td><td>16</td><td>Platform Team</td><td>Least-privilege tool scopes, allow-listing</td>
+</tr>
+<tr class="risk-med">
+  <td>T5</td><td>Rogue MCP server impersonation (no mTLS)</td><td>Spoofing</td><td>3</td><td>5</td><td>15</td><td>Platform Team</td><td>Enforce mTLS between MCP client and server</td>
+</tr>
+<tr class="risk-med">
+  <td>T6</td><td>Credential checkout not attributable to a run</td><td>Repudiation</td><td>3</td><td>5</td><td>15</td><td>SecOps</td><td>Signed credential-issuance audit log</td>
+</tr>
+<tr class="risk-med">
+  <td>T7</td><td>Excessive PII returned by Internal REST API</td><td>Information Disclosure</td><td>3</td><td>4</td><td>12</td><td>API Team</td><td>Field-level response filtering, data minimization</td>
+</tr>
+<tr class="risk-med">
+  <td>T8</td><td>Recursive tool-call loop causes DoS</td><td>Denial of Service</td><td>3</td><td>4</td><td>12</td><td>Platform Team</td><td>Tool-call depth limits, circuit breakers</td>
+</tr>
+<tr class="risk-med">
+  <td>T9</td><td>IDOR / confused deputy on Internal REST API</td><td>Elevation of Privilege</td><td>3</td><td>4</td><td>12</td><td>API Team</td><td>Per-request authorization checks, no implicit trust</td>
+</tr>
+<tr class="risk-low">
+  <td>T10</td><td>Auth0 brute-force without Attack Protection</td><td>Denial of Service</td><td>2</td><td>5</td><td>10</td><td>IAM Team</td><td>Enable Auth0 Attack Protection, MFA enforcement</td>
+</tr>
+<tr class="risk-low">
+  <td>T11</td><td>Token substitution via compromised redirect URI</td><td>Spoofing</td><td>2</td><td>5</td><td>10</td><td>IAM Team</td><td>Strict redirect URI allow-list, PKCE enforcement</td>
+</tr>
+<tr class="risk-low">
+  <td>T12</td><td>Knowledge Base returns restricted/internal docs</td><td>Information Disclosure</td><td>2</td><td>4</td><td>8</td><td>Data Team</td><td>Document-level access control on KB retrieval</td>
+</tr>
+<tr class="risk-low">
+  <td>T13</td><td>No SIEM correlation of LLM provider call events</td><td>Repudiation</td><td>2</td><td>3</td><td>6</td><td>SecOps</td><td>Forward provider call logs to central SIEM</td>
+</tr>
+<tr class="risk-low">
+  <td>T14</td><td>Oversized chunk payloads degrade agent performance</td><td>Denial of Service</td><td>2</td><td>2</td><td>4</td><td>Data/AI Team</td><td>Chunk size limits, response payload caps</td>
+</tr>
+</table>
+
+</body>
+</html>
